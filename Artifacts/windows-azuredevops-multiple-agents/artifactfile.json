@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/Azure/azure-devtestlab/master/schemas/2016-11-28/dtlArtifacts.json",
     "title": "Azure Pipelines Agent(s)",
     "publisher": "Utkarsh Shigihalli",
-    "description": "Downloads latest Azure Pipelines agent for the account, and installs the specified number instances of the agents inside one VM. Registers the agent with the Azure DevOps account, and adds agents to the specified agent pool. Note - If the specified agent folder already exists it will be overwritten.",
+    "description": "Downloads latest Azure Pipelines agent for the account, and installs the specified number instances of the agents inside one Windows VM. Registers the agent with the Azure DevOps account, and adds agents to the specified agent pool. Note - If the specified agent folder already exists it will be overwritten.",
     "tags": [
         "Azure DevOps",
         "Pipelines",
@@ -27,14 +27,20 @@
         "AgentName": {
             "type": "string",
             "displayName": "Agent Name",
-            "description": "The name to give to the agent, as seen by Azure DevOps. If empty, the computer name will be used. Prefixes every agent with given prefix",
+            "description": "The name to give to the agent, as seen by Azure DevOps. If empty, the computer name will be used.",
             "allowEmpty": true
         },
         "AgentNamePrefix": {
             "type": "string",
             "displayName": "Agent Name Prefix",
-            "description": "Prefixes every agent with string specified here",
-            "allowEmpty": true
+            "description": "Prefixes every agent with string specified here.",
+            "defaultValue": "dtl"
+        },
+        "AgentInstallLocation": {
+            "type": "string",
+            "displayName": "Agent Name Prefix",
+            "description": "Prefixes every agent with string specified here.",
+            "defaultValue": "c:\\agents"
         },
         "PoolName": {
             "type": "string",
@@ -44,7 +50,14 @@
         "AgentCount": {
             "type": "int",
             "displayName": "Number of Agents",
-            "description": "The number of agents to install and add to the pool. Each agent will be named as prefix-agentname-(1..n)."
+            "description": "The number of agents to install and add to the pool. Each agent will be named as prefix-agentname-(1..n).",
+            "defaultValue": 1
+        },
+        "Overwrite": {
+            "type": "bool",
+            "displayName": "Overwrite if agent with same name exists",
+            "defaultValue": "true",
+            "description": "If the folder with the agent name already exists, and this is true, the agent will be overwritten, otherwise installation will fail."
         }
     },
     "runCommand": {
