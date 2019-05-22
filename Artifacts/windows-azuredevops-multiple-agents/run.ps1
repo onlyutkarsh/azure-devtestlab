@@ -11,7 +11,7 @@ Param
     [String]$PersonalAccessToken,
 
     [Parameter()]
-    [string]$AgentName,
+    [string]$AgentName="",
 
     [Parameter()]
     [string]$AgentInstallLocation,
@@ -103,11 +103,14 @@ try {
     if ([string]::IsNullOrWhiteSpace($PoolName)) {
         throw "PoolName parameter is required."
     }
-    if ([string]::IsNullOrWhiteSpace($AgentName)) {
+    <#if ([string]::IsNullOrWhiteSpace($AgentName)) {
         $AgentName = $env:COMPUTERNAME
-    }
+    }#>
     if (-not [string]::IsNullOrWhiteSpace($AgentNamePrefix)) {
-        $AgentName = ("{0}-{1}" -f $AgentNamePrefix, $AgentName)
+        if(![string]::IsNullOrEmpty($AgentName)){
+            $AgentName = "-$AgentName";
+        }
+        $AgentName = ("{0}{1}" -f $AgentNamePrefix, $AgentName)
     }
     if ([string]::IsNullOrWhiteSpace($AgentInstallLocation)) {
         $AgentInstallLocation = "c:\agents";
@@ -171,7 +174,7 @@ try {
         $agentInstallationPath = Join-Path $AgentInstallLocation $Agent
 
         #Test if the directory already exist, which probably means agent also exists
-        if (-not $Overwrite -and (Test-Path $agentInstallationPath)) {
+        if ((!$Overwrite) -and (Test-Path $agentInstallationPath)) {
             Write-Output "Directory $agentInstallationPath not empty..Overwrite is set to 'false', skipping..."
             continue;
         }
@@ -179,10 +182,13 @@ try {
         # Create the directory for this agent.
         New-Item -ItemType Directory -Force -Path $agentInstallationPath
 
+        $agentInstallationPath = [IO.Path]::GetFullPath($agentInstallationPath) # Get absolute path
+
         # Set the current directory to the agent dedicated one previously created.
         Push-Location -Path $agentInstallationPath
 	
-        Write-Output "Extracting the zip file for the agent" 
+        Write-Output "Extracting the zip file for the agent"
+
         $destShellFolder = (new-object -com shell.application).namespace("$agentInstallationPath")
         $destShellFolder.CopyHere((new-object -com shell.application).namespace("$agentTempFolderName\agent.zip").Items(), 16)
 
@@ -212,4 +218,3 @@ try {
 finally {
     Pop-Location
 }
-
